@@ -6,12 +6,14 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // wajib sebelum await di main
   final prefs = await PrefService.init();
   await prefs.increaseOpenCount();
+  debugPrint('Isi prefs: ${prefs.debugKeys}');
   runApp(MyApp(prefs: prefs));
 }
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key, required this.prefs});
   final PrefService prefs;
+  
 
   @override
   State<MyApp> createState() => _MyAppState();

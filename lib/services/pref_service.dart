@@ -5,6 +5,8 @@ class PrefService {
   PrefService._(this._prefs);
   final SharedPreferences _prefs;
 
+  Set<String> get debugKeys => _prefs.getKeys();
+
   // Semua key dikumpulkan di sini.
   static const _kOpenCount = 'open_count';
 
