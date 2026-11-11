@@ -28,6 +28,35 @@ class _ProjectListPageState extends State<ProjectListPage> {
     if (changed == true) _reload();
   }
 
+  // Fungsi baru untuk konfirmasi dan hapus data
+  Future<void> _confirmDelete(Project p) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Hapus proyek?'),
+        content: Text('"${p.title}" akan dihapus permanen.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+
+    await _repo.delete(p.id!);
+    if (!mounted) return;
+    _reload();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('"${p.title}" dihapus')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,6 +97,12 @@ class _ProjectListPageState extends State<ProjectListPage> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   isThreeLine: true,
+                  onTap: () => _openForm(p), // Membuka form dalam mode edit
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    tooltip: 'Hapus',
+                    onPressed: () => _confirmDelete(p), // Menghapus proyek
+                  ),
                 ),
               );
             },
