@@ -28,7 +28,6 @@ class _ProjectListPageState extends State<ProjectListPage> {
     if (changed == true) _reload();
   }
 
-  // Fungsi baru untuk konfirmasi dan hapus data
   Future<void> _confirmDelete(Project p) async {
     final ok = await showDialog<bool>(
       context: context,
@@ -87,8 +86,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
             itemBuilder: (context, index) {
               final p = items[index];
               return Card(
-                margin:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 child: ListTile(
                   title: Text(p.title),
                   subtitle: Text(
@@ -97,11 +95,24 @@ class _ProjectListPageState extends State<ProjectListPage> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   isThreeLine: true,
-                  onTap: () => _openForm(p), // Membuka form dalam mode edit
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    tooltip: 'Hapus',
-                    onPressed: () => _confirmDelete(p), // Menghapus proyek
+                  onTap: () => _openForm(p),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(p.isFavorite ? Icons.star : Icons.star_border),
+                        tooltip: 'Favorit',
+                        onPressed: () async {
+                          await _repo.update(p.copyWith(isFavorite: !p.isFavorite));
+                          _reload();
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        tooltip: 'Hapus',
+                        onPressed: () => _confirmDelete(p),
+                      ),
+                    ],
                   ),
                 ),
               );

@@ -3,53 +3,35 @@ import '../models/project.dart';
 import 'db_helper.dart';
 
 class ProjectRepository {
-  ProjectRepository({DbHelper? helper})
-      : _helper = helper ?? DbHelper.instance;
-
-  final DbHelper _helper;
-  static const _table = DbHelper.tableProjects;
-
-  // ---------- CREATE ----------
   Future<int> insert(Project project) async {
-    final db = await _helper.database;
-    return db.insert(_table, project.toMap()); // mengembalikan id baru
+    final db = await DbHelper.initDb();
+    return await db.insert(DbHelper.tableProjects, project.toMap());
   }
 
-  // ---------- READ ----------
-  Future<List<Project>> getAll({String query = ''}) async {
-    final db = await _helper.database;
-    final rows = await db.query(
-      _table,
-      where: query.isEmpty ? null : 'title LIKE ?',
-      whereArgs: query.isEmpty ? null : ['%$query%'],
-      orderBy: 'created_at DESC', // terbaru di atas
+  Future<List<Project>> getAll() async {
+    final db = await DbHelper.initDb();
+    final maps = await db.query(
+      DbHelper.tableProjects,
+      orderBy: 'is_favorite DESC, created_at DESC', // Urutkan favorit paling atas
     );
-    return rows.map(Project.fromMap).toList();
+    return maps.map((m) => Project.fromMap(m)).toList();
   }
 
-  Future<int> count() async {
-    final db = await _helper.database;
-    final result = await db.rawQuery('SELECT COUNT(*) FROM $_table');
-    return Sqflite.firstIntValue(result) ?? 0;
-  }
-
-  // ---------- UPDATE ----------
   Future<int> update(Project project) async {
-    final db = await _helper.database;
-    return db.update(
-      _table,
+    final db = await DbHelper.initDb();
+    return await db.update(
+      DbHelper.tableProjects,
       project.toMap(),
-      where: 'id = ?', // ⚠️ jangan pernah dihilangkan
+      where: 'id = ?',
       whereArgs: [project.id],
     );
   }
 
-  // ---------- DELETE ----------
   Future<int> delete(int id) async {
-    final db = await _helper.database;
-    return db.delete(
-      _table,
-      where: 'id = ?', // ⚠️ jangan pernah dihilangkan
+    final db = await DbHelper.initDb();
+    return await db.delete(
+      DbHelper.tableProjects,
+      where: 'id = ?',
       whereArgs: [id],
     );
   }
