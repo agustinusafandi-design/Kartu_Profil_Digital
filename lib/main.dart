@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'pages/profile_page.dart';
+import 'pages/project_list_page.dart';
 import 'services/pref_service.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // wajib sebelum await di main
+  WidgetsFlutterBinding.ensureInitialized();
   final prefs = await PrefService.init();
   await prefs.increaseOpenCount();
   debugPrint('Isi prefs: ${prefs.debugKeys}');
@@ -14,19 +15,17 @@ class MyApp extends StatefulWidget {
   const MyApp({super.key, required this.prefs});
   final PrefService prefs;
   
-
   @override
   State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  // Nilai awal dibaca dari penyimpanan, bukan hard-coded.
   late final ValueNotifier<bool> _isDark =
       ValueNotifier(widget.prefs.isDarkMode);
 
   void _changeTheme(bool value) {
-    _isDark.value = value;            // 1. ubah tampilan sekarang
-    widget.prefs.setDarkMode(value);  // 2. simpan untuk nanti
+    _isDark.value = value;           
+    widget.prefs.setDarkMode(value); 
   }
 
   @override
@@ -49,11 +48,7 @@ class _MyAppState extends State<MyApp> {
             brightness: Brightness.dark,
           ),
           themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
-          home: ProfilePage(
-            prefs: widget.prefs,
-            isDark: isDark,
-            onThemeChanged: _changeTheme,
-          ),
+          home: const ProjectListPage(),
         );
       },
     );
