@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../models/profile_data.dart';
 import '../services/pref_service.dart';
-import 'edit_profile_page.dart';
+import '../data/project_repository.dart';
+import 'project_list_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({
@@ -20,99 +20,71 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  late ProfileData _profile;
+  final _projectRepo = ProjectRepository();
+  late Future<int> _countFuture = _projectRepo.count();
 
-  @override
-  void initState() {
-    super.initState();
-    _profile = widget.prefs.profile; // baca data tersimpan
-  }
-
-  Future<void> _edit() async {
-    final result = await Navigator.push<ProfileData>(
+  Future<void> _openProjects() async {
+    await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => EditProfilePage(initial: _profile)),
+      MaterialPageRoute(builder: (_) => const ProjectListPage()),
     );
-    if (result == null) return; // pengguna menekan back
-
-    await widget.prefs.saveProfile(result);
     if (!mounted) return;
-    setState(() => _profile = result);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Profil tersimpan')),
-    );
-  }
-
-  // Fungsi _reset dipindah ke sini (sejajar dengan _edit)
-  Future<void> _reset() async {
-    await widget.prefs.clearProfile();
-    if (!mounted) return;
-    setState(() => _profile = widget.prefs.profile);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Profil dikembalikan ke bawaan')),
-    );
+    
+    // Kembali dari daftar proyek → segarkan jumlah
+    setState(() {
+      _countFuture = _projectRepo.count();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final initial =
-        _profile.name.isNotEmpty ? _profile.name[0].toUpperCase() : '?';
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Kartu Profil Digital'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            tooltip: 'Edit profil',
-            onPressed: _edit,
-          ),
-        ],
+        title: const Text('Profil Saya'),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
         children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundColor: colors.primaryContainer,
-                    child: Text(initial, style: const TextStyle(fontSize: 32)),
-                  ),
-                  OutlinedButton.icon(
-                    onPressed: _reset, // Sekarang fungsi ini dikenali
-                    icon: const Icon(Icons.restore),
-                    label: const Text('Reset Profil'),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(_profile.name,
-                      style: Theme.of(context).textTheme.headlineSmall),
-                  const SizedBox(height: 4),
-                  Text(_profile.title),
-                  const SizedBox(height: 12),
-                  Text(_profile.bio, textAlign: TextAlign.center),
-                ],
-              ),
-            ),
+          const SizedBox(height: 24),
+          const CircleAvatar(
+            radius: 50,
+            child: Icon(Icons.person, size: 50),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
+          const Text(
+            'Agustinus Afandi',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          const Text(
+            'Teknik Informatika - Polije',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+          const SizedBox(height: 32),
+          
+          // Lab 11: Menu Proyek Saya
+          ListTile(
+            leading: const Icon(Icons.folder_open),
+            title: const Text('Proyek Saya'),
+            subtitle: FutureBuilder<int>(
+              future: _countFuture,
+              builder: (context, snapshot) => Text('${snapshot.data ?? 0} proyek'),
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: _openProjects,
+          ),
+          const Divider(),
+          
           SwitchListTile(
             secondary: const Icon(Icons.dark_mode),
             title: const Text('Mode Gelap'),
             value: widget.isDark,
             onChanged: widget.onThemeChanged,
           ),
-          // Lab 11 akan menambahkan menu "Proyek Saya" di sini.
-          const SizedBox(height: 24),
-          Center(
-            child: Text(
-              'Kartu ini sudah dibuka ${widget.prefs.openCount} kali',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
+          ListTile(
+            leading: const Icon(Icons.info_outline),
+            title: const Text('Aplikasi dibuka'),
+            trailing: Text('${widget.prefs.openCount} kali'),
           ),
         ],
       ),

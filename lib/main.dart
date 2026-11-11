@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'pages/profile_page.dart';
-import 'pages/project_list_page.dart';
 import 'services/pref_service.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized(); 
   final prefs = await PrefService.init();
   await prefs.increaseOpenCount();
   debugPrint('Isi prefs: ${prefs.debugKeys}');
@@ -14,7 +13,7 @@ void main() async {
 class MyApp extends StatefulWidget {
   const MyApp({super.key, required this.prefs});
   final PrefService prefs;
-  
+
   @override
   State<MyApp> createState() => _MyAppState();
 }
@@ -24,8 +23,8 @@ class _MyAppState extends State<MyApp> {
       ValueNotifier(widget.prefs.isDarkMode);
 
   void _changeTheme(bool value) {
-    _isDark.value = value;           
-    widget.prefs.setDarkMode(value); 
+    _isDark.value = value;            
+    widget.prefs.setDarkMode(value);  
   }
 
   @override
@@ -48,7 +47,11 @@ class _MyAppState extends State<MyApp> {
             brightness: Brightness.dark,
           ),
           themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
-          home: const ProjectListPage(),
+          home: ProfilePage(
+            prefs: widget.prefs,
+            isDark: isDark,
+            onThemeChanged: _changeTheme,
+          ),
         );
       },
     );

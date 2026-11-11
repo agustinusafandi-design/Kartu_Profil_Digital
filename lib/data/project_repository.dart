@@ -12,7 +12,7 @@ class ProjectRepository {
     final db = await DbHelper.initDb();
     final maps = await db.query(
       DbHelper.tableProjects,
-      orderBy: 'is_favorite DESC, created_at DESC', // Urutkan favorit paling atas
+      orderBy: 'is_favorite DESC, created_at DESC', 
     );
     return maps.map((m) => Project.fromMap(m)).toList();
   }
@@ -34,5 +34,12 @@ class ProjectRepository {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  // Tambahan Lab 11: Menghitung total proyek
+  Future<int> count() async {
+    final db = await DbHelper.initDb();
+    final result = await db.rawQuery('SELECT COUNT(*) FROM ${DbHelper.tableProjects}');
+    return Sqflite.firstIntValue(result) ?? 0;
   }
 }
